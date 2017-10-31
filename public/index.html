@@ -17,7 +17,12 @@
 <body>
 <ul id="messages"></ul>
 <form action="">
-	<input id="m" autocomplete="off" /><button>Send</button>
+	<input id="myName" autocomplete="off" placeholder="Your Name"/>
+	<br>
+	<br>
+	<br>
+	<input id="myText" autocomplete="off" placeholder="Text"/>
+	<button>Send</button>
 </form>
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
@@ -25,14 +30,39 @@
 	$(function () {
 		var socket = io();
 		$('form').submit(function(){
-			socket.emit('chat message', $('#m').val());
-			$('#m').val('');
+
+			var msg = $('#myText').val();
+
+			// if the user entered command
+			if( msg.startsWith("/") ){
+
+				// read the first word and set command
+				var words = msg.split(" ");
+				var command = words[0];
+				if(command == "/SetColor")
+				{
+					var color = words[1];
+					$('#messages').css('color', color);
+				}
+			}
+			else{
+				// send request to server to send message
+				socket.emit('chat message', $('#myName').val(), $('#myText').val());
+
+				// delete the text box
+				$('#myText').val('');
+			}
 			return false;
 		});
-		socket.on('chat message', function(msg){
-			$('#messages').append($('<li>').text(msg));
+
+		socket.on('chat message', function(name, msg){
+			var format = 'Name: ' + name + ' message: ' + msg;
+
+			// add the message to the html file
+			$('#messages').append($('<li>').text(format));
 			window.scrollTo(0, document.body.scrollHeight);
 		});
+
 	});
 </script>
 </body>
