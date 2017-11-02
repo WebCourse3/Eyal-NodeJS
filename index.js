@@ -1,30 +1,28 @@
-const express = require('express');
-const app = express();
-
-var path = require('path');
+var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var port = process.env.PORT || 3000;
 
-// set express to expose static files under public folder
-app.use(express.static('public'));
-
-// GET method route
+// in case user entered URL
 app.get('/', function(req, res){
-	// __dirname returns the directory that the currently executing script is in
-	res.sendFile('public/index.html', {root: __dirname});
+	res.sendFile(__dirname + '/public/index.html');
 });
-
-// POST method route
-app.post('/', function (req, res) {
-	res.send('POST request to the homepage')
-})
 
 io.on('connection', function(socket){
 	console.log('a user connected');
+    socket.on('chat message', function (name, msg) {
+
+        // check if we got command
+        if (msg.startsWith("/")) {
+            console.log("user entered command");
+        }
+        else {
+            console.log('user sent message');
+            socket.broadcast.emit('chat message', name, msg);
+        }
+    });
 });
 
-app.listen(3000, function () {
-	console.log('Example app listening on port 3000!')
+http.listen(port, function(){
+	console.log('listening on *:' + port);
 });
-
-
